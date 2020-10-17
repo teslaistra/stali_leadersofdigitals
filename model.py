@@ -53,7 +53,7 @@ def get_busy(img, coors):
 
 def detect_parking(image_path, inputs):
     global model
-    model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, progress=False)
+    model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, progress=True)
     model.eval()
     print("done model")
 

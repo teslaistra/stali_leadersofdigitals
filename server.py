@@ -32,8 +32,10 @@ async def read_coords(house_id: int):
     # набиваем словарь UID-координата для модели
     for place in house:
         coords[place[0]] = (place[4], place[5])
+
     print("before model")
     busy_places = detect_parking(house_picture_path, coords)
+    print("after model")
     free = {}
     busy = {}
     for place in house:
@@ -42,7 +44,7 @@ async def read_coords(house_id: int):
             busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0])}
         else:
             free[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0])}
-
+    print('quite finish')
     db_worker.close()
     return {"free": free, "busy": busy}
 

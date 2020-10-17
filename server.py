@@ -73,10 +73,11 @@ async def read_coords(house_id: int):
 
         # будем искать новый адрес только если точка далее 50 метров предыдущей
         # это помогает сократить время исполнения запроса
+        print("--- %s seconds ---" % (time.time() - start_time))
         if haversine(float(place[2]), float(place[3]), lat_last, lon_last) * 1000 > 50:
             g = geocoder.osm([float(place[2]), float(place[3])], method='reverse')
-
-
+        print("--- %s seconds ---" % (time.time() - start_time))
+        print("____________")
         address = g[0].json['raw']['address']['road']
         if place[0] in busy_places:
             busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),

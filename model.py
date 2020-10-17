@@ -9,6 +9,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from PIL import Image
 from matplotlib import pyplot as plt
 
+global model
 model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, progress=False)
 model.eval()
 
@@ -52,9 +53,7 @@ def get_busy(img, coors):
 
 
 def detect_parking(image_path, inputs):
-    global model
-    model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, progress=True)
-    model.eval()
+
     print("done model")
 
     im = Image.open(image_path)

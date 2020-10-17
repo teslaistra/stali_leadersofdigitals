@@ -70,8 +70,10 @@ class SQLighter:
             f"SELECT IS_DISABLED FROM parking_places WHERE UID = {parking_id}")
         return obj.fetchall()[0][0]
 
-        # self.cursor.execute(f"INSERT INTO wait (chat_id) VALUES({str(chat_id)})")
-        # self.connection.commit()
+    def insert_feedback(self, user_id, content, email):
+        self.cursor.execute(
+            f"INSERT INTO feedback (content, user_id, email) VALUES('{str(email)}', {int(user_id)},'{content}')")
+        self.connection.commit()
 
     def close(self):
         """ Закрываем текущее соединение с БД """

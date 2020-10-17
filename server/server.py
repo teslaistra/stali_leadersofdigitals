@@ -1,10 +1,9 @@
 from fastapi import FastAPI
-from SQLighter import *
-from model import detect_parking
+from server.SQLighter import *
+from server.server import detect_parking
 import geocoder
 from math import radians, cos, sin, asin, sqrt
 from datetime import *
-import time
 
 app = FastAPI(title="Hack")
 

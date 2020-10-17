@@ -55,6 +55,9 @@ def detect_parking(image_path, inputs):
     global model
     model_ = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, progress=False)
     model_.eval()
+    print("done model")
+
     im = Image.open(image_path)
+    print("image opened")
 
     return get_busy(im, inputs)

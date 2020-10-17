@@ -56,14 +56,12 @@ async def read_coords(house_id: int):
     # набиваем словарь UID-координата для модели
     for place in house:
         coords[place[0]] = (place[4], place[5])
-    print(db_worker.get_last_time_update(house_id))
 
     # считаем разницу во времени между текущим запросом и предыдущим обновлением этого дома
     last_time_update_obj = datetime.strptime(db_worker.get_last_time_update(house_id), '%Y-%m-%d %H:%M:%S')
     now_time_obj = datetime.now(tz=None).replace(microsecond=0)
     difference = now_time_obj - last_time_update_obj
 
-    print("difference", difference.seconds / 60)
 
     # если данные устаревшие, то используем нейронную сеть
     if difference.seconds / 60 > 5:

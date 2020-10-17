@@ -28,7 +28,6 @@ class SQLighter:
         self.connection.commit()
 
     def set_to_free_place(self, place_id):
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", place_id)
 
         self.cursor.execute(f"UPDATE parking_places SET BUSY = 'FALSE' where UID = {place_id}")
         self.connection.commit()

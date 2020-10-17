@@ -14,7 +14,8 @@ async def root():
 @app.get("/login/")
 async def root(login: str, password: str):
     db_worker = SQLighter("parking.db")
-    return {"registred": db_worker.get_user(login, password)}
+    return {"registred": db_worker.get_user(login, password),
+            "is_disabled": db_worker.get_user_disabled(login, password)}
 
 
 @app.get("/get_house/")

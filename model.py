@@ -16,7 +16,6 @@ model.eval()
 
 def get_predictions(im):
     photo = transforms.ToTensor()(im).unsqueeze_(0)
-    photo.shape
     result = model(photo)[0]
     boxes = result['boxes']
     pret = []
@@ -40,7 +39,9 @@ def get_predictions(im):
 
 
 def get_busy(img, coors):
+    print(1)
     boxed, taken = (get_predictions(img))
+    print(2)
     busy = []
     for t in taken:
         c = ((t[0] + t[2]) / 2, (t[1] + t[3]) / 2)

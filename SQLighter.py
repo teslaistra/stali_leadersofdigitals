@@ -70,9 +70,9 @@ class SQLighter:
             f"SELECT IS_DISABLED FROM parking_places WHERE UID = {parking_id}")
         return obj.fetchall()[0][0]
 
-    def insert_feedback(self, user_id, content, email):
+    def insert_feedback(self, user_id, content):
         self.cursor.execute(
-            f"INSERT INTO feedback (content, user_id, email) VALUES('{str(email)}', {int(user_id)},'{content}')")
+            f"INSERT INTO feedback (user_id,content ) VALUES( {int(user_id)},'{content}')")
         self.connection.commit()
 
     def close(self):

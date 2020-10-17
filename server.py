@@ -110,7 +110,7 @@ async def read_coords(lat: float, lon: float):
 
 
 @app.get("/feedback/")
-async def read_coords(user_id: int, email: str, text: str):
+async def read_coords(user_id: int, text: str):
     db_worker = SQLighter("parking.db")
-    db_worker.insert_feedback(user_id, email, text)
+    db_worker.insert_feedback(user_id, text)
     db_worker.close()

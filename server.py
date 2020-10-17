@@ -12,11 +12,9 @@ async def root():
 
 
 @app.get("/login/")
-async def root():
+async def root(login: str, password: str):
     db_worker = SQLighter("parking.db")
-
-    return {"message": "Hello World"}
-
+    return {"registred": db_worker.get_user(login, password)}
 
 
 @app.get("/get_house/")

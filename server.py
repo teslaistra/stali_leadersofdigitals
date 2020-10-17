@@ -3,6 +3,8 @@ from SQLighter import *
 from model import detect_parking
 import geocoder
 from math import radians, cos, sin, asin, sqrt
+from datetime import *
+import time
 
 app = FastAPI(title="Hack")
 
@@ -44,7 +46,6 @@ async def login(login: str, password: str):
 
 @app.get("/get_house/")
 async def read_coords(house_id: int):
-
     db_worker = SQLighter("parking.db")
 
     # получаем парковочные места по дому
@@ -55,9 +56,28 @@ async def read_coords(house_id: int):
     # набиваем словарь UID-координата для модели
     for place in house:
         coords[place[0]] = (place[4], place[5])
+    print(db_worker.get_last_time_update(house_id))
 
-    # получаем занятые парковки
-    busy_places = detect_parking(house_picture_path, coords)
+    # считаем разницу во времени между текущим запросом и предыдущим обновлением этого дома
+    last_time_update_obj = datetime.strptime(db_worker.get_last_time_update(house_id), '%Y-%m-%d %H:%M:%S')
+    now_time_obj = datetime.now(tz=None).replace(microsecond=0)
+    difference = now_time_obj - last_time_update_obj
+
+    print("difference", difference.seconds / 60)
+
+    # если данные устаревшие, то используем нейронную сеть
+    if difference.seconds / 60 > 5:
+        # получаем занятые парковки
+        busy_places = detect_parking(house_picture_path, coords)
+        # обновляем время получения последних данных по этой камере
+        db_worker.update_last_time(house_id)
+        # проходимся по всем парковкам в доме, обновляя статус каждой
+        for place in house:
+            if place[0] in busy_places:
+                db_worker.set_to_busy_place(place[0])
+            else:
+                db_worker.set_to_free_place(place[0])
+
     free = {}
     busy = {}
 
@@ -74,7 +94,7 @@ async def read_coords(house_id: int):
             g = geocoder.osm([float(place[2]), float(place[3])], method='reverse')
 
         address = g[0].json['raw']['address']['road']
-        if place[0] in busy_places:
+        if db_worker.is_busy_place(place[0]):
             busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
                               "address": address}
         else:

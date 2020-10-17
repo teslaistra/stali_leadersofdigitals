@@ -1,5 +1,6 @@
 import sqlite3
 import random
+import datetime
 
 
 class SQLighter:
@@ -11,6 +12,33 @@ class SQLighter:
     def get_image_path(self, house_id):
         obj = self.cursor.execute(f'SELECT PATH_TO_IMAGE FROM pictures WHERE HOUSE_ID = {house_id}')
         return obj.fetchall()[0][0]
+
+    def get_last_time_update(self, house_id):
+        obj = self.cursor.execute(f'SELECT UPDATE_DATE FROM pictures WHERE HOUSE_ID = {house_id}')
+        return obj.fetchall()[0][0]
+
+    def update_last_time(self, house_id):
+        self.cursor.execute(
+            f"UPDATE pictures SET UPDATE_DATE = '{datetime.datetime.now().replace(microsecond=0)}' where HOUSE_ID = {house_id}")
+        self.connection.commit()
+
+    def set_to_busy_place(self, place_id):
+        self.cursor.execute(
+            f"UPDATE parking_places SET BUSY = 'TRUE' where UID = {place_id}")
+        self.connection.commit()
+
+    def set_to_free_place(self, place_id):
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", place_id)
+
+        self.cursor.execute(f"UPDATE parking_places SET BUSY = 'FALSE' where UID = {place_id}")
+        self.connection.commit()
+
+    def is_busy_place(self, place_id):
+        obj = self.cursor.execute(f'SELECT BUSY FROM parking_places WHERE UID = {place_id}')
+        if obj.fetchall()[0][0] == "TRUE":
+            return True
+        else:
+            return False
 
     def get_parkings_house(self, house_id):
         obj = self.cursor.execute(f'SELECT * FROM parking_places WHERE HOUSE_ID = {house_id}')

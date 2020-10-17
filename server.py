@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from SQLighter import *
 from model import detect_parking
+import geocoder
 
 app = FastAPI(title="Hack")
 
 
 @app.get("/")
 async def root():
-    print("hello")
     return {"message": "Hello World"}
 
 
@@ -15,7 +15,7 @@ async def root():
 async def root(login: str, password: str):
     db_worker = SQLighter("parking.db")
     result = {"registred": db_worker.get_user(login, password),
-            "is_disabled": db_worker.is_user_disabled(login, password)}
+              "is_disabled": db_worker.is_user_disabled(login, password)}
     db_worker.close()
     return result
 
@@ -33,18 +33,19 @@ async def read_coords(house_id: int):
     for place in house:
         coords[place[0]] = (place[4], place[5])
 
-    print("before model")
     busy_places = detect_parking(house_picture_path, coords)
-    print("after model")
     free = {}
     busy = {}
+
     for place in house:
         print(place)
+
+        g = geocoder.osm([float(place[2]), float(place[3])], method='reverse')
+        address = g[0].json['raw']['address']['road']
         if place[0] in busy_places:
-            busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0])}
+            busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]), "address": address}
         else:
             free[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0])}
-    print('quite finish')
     db_worker.close()
     return {"free": free, "busy": busy}
 
@@ -52,4 +53,3 @@ async def read_coords(house_id: int):
 @app.get("/get_parking/")
 async def read_coords(lat: float, lon: float):
     return lat, lon
-

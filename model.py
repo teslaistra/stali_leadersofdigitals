@@ -15,11 +15,8 @@ model.eval()
 
 
 def get_predictions(im):
-    print(2)
     photo = transforms.ToTensor()(im).unsqueeze_(0)
-    print(3)
     result = model(photo)[0]
-    print(4)
     boxes = result['boxes']
     pret = []
     avg = 0
@@ -42,9 +39,7 @@ def get_predictions(im):
 
 
 def get_busy(img, coors):
-    print(1)
     boxed, taken = (get_predictions(img))
-    print(2)
     busy = []
     for t in taken:
         c = ((t[0] + t[2]) / 2, (t[1] + t[3]) / 2)
@@ -58,9 +53,6 @@ def get_busy(img, coors):
 
 def detect_parking(image_path, inputs):
 
-    print("done model")
-
     im = Image.open(image_path)
-    print("image opened")
 
     return get_busy(im, inputs)

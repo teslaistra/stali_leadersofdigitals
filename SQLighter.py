@@ -20,9 +20,8 @@ class SQLighter:
         obj = self.cursor.execute(f'SELECT * FROM users WHERE LOGIN = {login} AND PASSWORD = {password}')
         return bool(len(obj.fetchall()))
 
-
-        #self.cursor.execute(f"INSERT INTO wait (chat_id) VALUES({str(chat_id)})")
-        #self.connection.commit()
+        # self.cursor.execute(f"INSERT INTO wait (chat_id) VALUES({str(chat_id)})")
+        # self.connection.commit()
 
     def is_waiting(self, chat_id):
         with self.connection:

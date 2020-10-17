@@ -111,3 +111,7 @@ async def read_coords(user_id: int, text: str):
     db_worker = SQLighter("parking.db")
     db_worker.insert_feedback(user_id, text)
     db_worker.close()
+
+@app.get("/get_house/")
+async def read_coords(lat: float, lon: float):
+    return {"еще не" : "сделал"}

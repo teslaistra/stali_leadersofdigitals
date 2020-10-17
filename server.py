@@ -2,9 +2,7 @@ from fastapi import FastAPI
 from SQLighter import *
 from model import detect_parking
 import geocoder
-import scipy.spatial as spatial
 from math import radians, cos, sin, asin, sqrt
-import time
 
 app = FastAPI(title="Hack")
 
@@ -46,7 +44,6 @@ async def login(login: str, password: str):
 
 @app.get("/get_house/")
 async def read_coords(house_id: int):
-    start_time = time.time()
 
     db_worker = SQLighter("parking.db")
 
@@ -73,11 +70,9 @@ async def read_coords(house_id: int):
 
         # будем искать новый адрес только если точка далее 50 метров предыдущей
         # это помогает сократить время исполнения запроса
-        print("--- %s seconds ---" % (time.time() - start_time))
         if haversine(float(place[2]), float(place[3]), lat_last, lon_last) * 1000 > 50:
             g = geocoder.osm([float(place[2]), float(place[3])], method='reverse')
-        print("--- %s seconds ---" % (time.time() - start_time))
-        print("____________")
+
         address = g[0].json['raw']['address']['road']
         if place[0] in busy_places:
             busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
@@ -86,7 +81,6 @@ async def read_coords(house_id: int):
             free[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
                               "address": address}
     db_worker.close()
-    print("--- %s seconds ---" % (time.time() - start_time))
     return {"free": free, "busy": busy}
 
 

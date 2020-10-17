@@ -20,9 +20,15 @@ class SQLighter:
         obj = self.cursor.execute(f"SELECT * FROM users WHERE LOGIN = '{login}' AND PASSWORD = '{password}'")
         return bool(len(obj.fetchall()))
 
-    def get_user_disabled(self, login, password):
+    def is_user_disabled(self, login, password):
         obj = self.cursor.execute(f"SELECT IS_DISABLED FROM users WHERE LOGIN = '{login}' AND PASSWORD = '{password}'")
         return obj.fetchall()[0][0]
+
+    def is_place_disabled(self, parking_id):
+        obj = self.cursor.execute(
+            f"SELECT IS_DISABLED FROM parking_places WHERE UID = {parking_id}")
+        return obj.fetchall()[0][0]
+
 
         # self.cursor.execute(f"INSERT INTO wait (chat_id) VALUES({str(chat_id)})")
         # self.connection.commit()

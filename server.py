@@ -15,7 +15,7 @@ async def root():
 async def root(login: str, password: str):
     db_worker = SQLighter("parking.db")
     return {"registred": db_worker.get_user(login, password),
-            "is_disabled": db_worker.get_user_disabled(login, password)}
+            "is_disabled": db_worker.is_user_disabled(login, password)}
 
 
 @app.get("/get_house/")
@@ -25,8 +25,6 @@ async def read_coords(house_id: int):
     # получаем парковочные места по дому
     house = db_worker.get_parkings_house(house_id)
     house_picture_path = db_worker.get_image_path(house_id)
-    print(house_picture_path)
-    db_worker.close()
 
     coords = {}
     # набиваем словарь UID-координата для модели
@@ -39,9 +37,11 @@ async def read_coords(house_id: int):
     for place in house:
         print(place)
         if place[0] in busy_places:
-            busy[place[0]] = (place[2], place[3])
+            busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0])}
         else:
-            free[place[0]] = (place[2], place[3])
+            free[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0])}
+
+    db_worker.close()
     return {"free": free, "busy": busy}
 
 

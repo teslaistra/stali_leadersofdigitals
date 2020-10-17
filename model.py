@@ -15,8 +15,11 @@ model.eval()
 
 
 def get_predictions(im):
+    print(2)
     photo = transforms.ToTensor()(im).unsqueeze_(0)
+    print(3)
     result = model(photo)[0]
+    print(4)
     boxes = result['boxes']
     pret = []
     avg = 0

@@ -127,6 +127,8 @@ async def read_coords(address: str, radius: int):
         free = {}
         busy = {}
         for place in house:
+            if haversine(float(place[2]), float(place[3]), lat_last, lon_last) * 1000 > 50:
+                g = geocoder.osm([float(place[2]), float(place[3])], method='reverse')
             address = g[0].json['raw']['address']['road']
             if db_worker.is_busy_place(place[0]):
                 busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),

@@ -90,7 +90,6 @@ async def read_coords(house_id: int):
         # это помогает сократить время исполнения запроса
         if haversine(float(place[2]), float(place[3]), lat_last, lon_last) * 1000 > 50:
             g = geocoder.osm([float(place[2]), float(place[3])], method='reverse')
-
         address = g[0].json['raw']['address']['road']
         if db_worker.is_busy_place(place[0]):
             busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
@@ -126,20 +125,21 @@ async def read_coords(address: str, radius: int):
         g = geocoder.osm([lat_last, lon_last], method='reverse')
         free = {}
         busy = {}
+
         for place in house:
+            print(place)
+
             if haversine(float(place[2]), float(place[3]), lat_last, lon_last) * 1000 > 50:
                 g = geocoder.osm([float(place[2]), float(place[3])], method='reverse')
             address = g[0].json['raw']['address']['road']
             if db_worker.is_busy_place(place[0]):
                 busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
-                                  "address": address}
+                                  "address": address, "house_id": place[1]}
             else:
                 free[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
-                                  "address": address}
+                                  "address": address, "house_id": place[1]}
         return {"free": free, "busy": busy}
 
-
-    db_worker = SQLighter("parking.db")
     coords = db_worker.get_points_numpy()
     coords = [[55.892242, 37.542604]]
     coords_radian = []
@@ -150,12 +150,12 @@ async def read_coords(address: str, radius: int):
 
     tree = BallTree(np.array(coords_radian), leaf_size=3, metric=DistanceMetric.get_metric("haversine"))
 
-    g = geocoder.yandex('Moscow Russia')
+    g = geocoder.osm('139 Дмитровское шоссе Москва')
     sci_radius = radius / 1000 / 6371
 
-    print(g.json)
-    object_idxs = tree.query_radius([[radians(g.osm['y']), radians(g.osm['x'])]], r=sci_radius, return_distance=True)
-
+    object_idxs = tree.query_radius(
+        [[radians(g.json['raw']['address']['lat']), radians(g.json['raw']['address']['lon'])]], r=sci_radius,
+        return_distance=True)
 
     print(object_idxs)
     db_worker.close()

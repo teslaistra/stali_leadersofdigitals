@@ -34,7 +34,6 @@ class SQLighter:
         self.connection.commit()
 
     def is_busy_place(self, place_id):
-        print(place_id)
         obj = self.cursor.execute(f'SELECT BUSY FROM parking_places WHERE UID = {place_id}')
         if obj.fetchall()[0][0] == "TRUE":
             return True

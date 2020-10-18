@@ -141,7 +141,6 @@ async def read_coords(address: str, radius: int):
         return {"free": free, "busy": busy}
 
     coords = db_worker.get_points_numpy()
-    coords = [[55.892242, 37.542604]]
     coords_radian = []
     for coord in coords:
         lat = float(coord[0])
@@ -150,14 +149,37 @@ async def read_coords(address: str, radius: int):
 
     tree = BallTree(np.array(coords_radian), leaf_size=3, metric=DistanceMetric.get_metric("haversine"))
 
-    g = geocoder.osm('139 Дмитровское шоссе Москва')
+    g = geocoder.osm(address)
     sci_radius = radius / 1000 / 6371
 
     object_idxs = tree.query_radius(
-        [[radians(g.json['raw']['address']['lat']), radians(g.json['raw']['address']['lon'])]], r=sci_radius,
+        [[radians(float(g.json['raw']['lat'])), radians(float(g.json['raw']['lon']))]], r=sci_radius,
         return_distance=True)
 
-    print(object_idxs)
+    coords = db_worker.get_all_places()
+
+    busy = {}
+    free = {}
+
+    lat_last = float(coords[0][2])
+    lon_last = float(coords[0][3])
+    g = geocoder.osm([lat_last, lon_last], method='reverse')
+
+    for i in range(len(coords)):
+        if i in object_idxs[0][0]:
+            place = coords[i]
+            if haversine(float(place[2]), float(place[3]), lat_last, lon_last) * 1000 > 50:
+                g = geocoder.osm([float(place[2]), float(place[3])], method='reverse')
+            address = g[0].json['raw']['address']['road']
+            if db_worker.is_busy_place(place[0]):
+                busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
+                                  "address": address, "house_id": place[1]}
+            else:
+                free[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
+                                  "address": address, "house_id": place[1]}
+            lat_last = float(place[2])
+            lon_last = float(place[3])
+
     db_worker.close()
 
-    return {"еще не": "сделал"}
+    return {"free": free, "busy": busy}

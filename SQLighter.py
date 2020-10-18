@@ -1,6 +1,7 @@
 import sqlite3
 import random
 import datetime
+import numpy as np
 
 
 class SQLighter:
@@ -33,6 +34,7 @@ class SQLighter:
         self.connection.commit()
 
     def is_busy_place(self, place_id):
+        print(place_id)
         obj = self.cursor.execute(f'SELECT BUSY FROM parking_places WHERE UID = {place_id}')
         if obj.fetchall()[0][0] == "TRUE":
             return True
@@ -73,6 +75,14 @@ class SQLighter:
         self.cursor.execute(
             f"INSERT INTO feedback (user_id,content ) VALUES( {int(user_id)},'{content}')")
         self.connection.commit()
+
+    def get_points_numpy(self):
+        obj = self.cursor.execute(f'SELECT LAT, LON FROM parking_places')
+        return obj.fetchall()
+
+    def get_all_places(self):
+        obj = self.cursor.execute(f'SELECT * FROM parking_places')
+        return obj.fetchall()
 
     def close(self):
         """ Закрываем текущее соединение с БД """

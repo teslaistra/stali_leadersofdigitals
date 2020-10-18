@@ -4,6 +4,8 @@ from model import detect_parking
 import geocoder
 from math import radians, cos, sin, asin, sqrt
 from datetime import *
+from sklearn.neighbors import BallTree, DistanceMetric
+import numpy as np
 
 app = FastAPI(title="Hack")
 
@@ -61,7 +63,6 @@ async def read_coords(house_id: int):
     now_time_obj = datetime.now(tz=None).replace(microsecond=0)
     difference = now_time_obj - last_time_update_obj
 
-
     # если данные устаревшие, то используем нейронную сеть
     if difference.seconds / 60 > 5:
         # получаем занятые парковки
@@ -112,6 +113,49 @@ async def read_coords(user_id: int, text: str):
     db_worker.insert_feedback(user_id, text)
     db_worker.close()
 
-@app.get("/get_house/")
-async def read_coords(lat: float, lon: float):
-    return {"еще не" : "сделал"}
+
+@app.get("/get_in_radius/")
+async def read_coords(address: str, radius: int):
+    db_worker = SQLighter("parking.db")
+    coords = db_worker.get_points_numpy()
+
+    if address == "debug":
+        house = db_worker.get_all_places()
+        lat_last = float(house[0][2])
+        lon_last = float(house[0][3])
+        g = geocoder.osm([lat_last, lon_last], method='reverse')
+        free = {}
+        busy = {}
+        for place in house:
+            address = g[0].json['raw']['address']['road']
+            if db_worker.is_busy_place(place[0]):
+                busy[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
+                                  "address": address}
+            else:
+                free[place[0]] = {"lat": place[2], "lon": place[3], "disabled": db_worker.is_place_disabled(place[0]),
+                                  "address": address}
+        return {"free": free, "busy": busy}
+
+
+    db_worker = SQLighter("parking.db")
+    coords = db_worker.get_points_numpy()
+    coords = [[55.892242, 37.542604]]
+    coords_radian = []
+    for coord in coords:
+        lat = float(coord[0])
+        lon = float(coord[1])
+        coords_radian.append([radians(lat), radians(lon)])
+
+    tree = BallTree(np.array(coords_radian), leaf_size=3, metric=DistanceMetric.get_metric("haversine"))
+
+    g = geocoder.yandex('Moscow Russia')
+    sci_radius = radius / 1000 / 6371
+
+    print(g.json)
+    object_idxs = tree.query_radius([[radians(g.osm['y']), radians(g.osm['x'])]], r=sci_radius, return_distance=True)
+
+
+    print(object_idxs)
+    db_worker.close()
+
+    return {"еще не": "сделал"}

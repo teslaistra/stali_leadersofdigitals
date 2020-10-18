@@ -10,6 +10,7 @@ from PIL import Image
 from matplotlib import pyplot as plt
 
 model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True, progress=False)
+model.load_state_dict(torch.load("resnet_trained.pkl"))
 model.eval()
 
 def get_predictions(im):
